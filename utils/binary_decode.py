@@ -12,7 +12,11 @@ def crop_header(s):
     header_str = n.to_bytes(header_len // 8, 'big').decode()
     print("The header is \n" + header_str)
 
-    return s[header_len:]
+    s = s[header_len:] # Crop the header
+    while s[-8:] == '00000000': # Crop the added 0 pairs
+        s = s[:-8]
+
+    return s
 
 def to_binary(s, path):
     from bitarray import bitarray
@@ -22,4 +26,4 @@ def to_binary(s, path):
 
 if __name__ == "__main__":
     foo = '011001100110100101101100011001010111001100101111001101000011011100110011001110000011001000110001001100000011100100111000001100110010111001110100011010010110011001100110000000000011000100110011001100000011100100110011001100100000000001001001010010010010101000000000001100001111111'
-    print(crop_header(foo))
+    print(foo[-5:])
