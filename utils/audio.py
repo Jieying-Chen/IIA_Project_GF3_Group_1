@@ -1,18 +1,17 @@
-from scipy.io.wavfile import write
+from scipy.io import wavfile
 import os.path
 import sounddevice
-import soundfile
 import numpy as np
 import matplotlib.pyplot as plt
 
 def signal_to_wav(s, fs, filename, path):
     """Write the signal s into path/filename.wav with sampling freq fs"""
 
-    write(os.path.join(path, "{}.wav".format(filename)), fs, s.astype(np.int16))
+    wavfile.write(os.path.join(path, "{}.wav".format(filename)), fs, s)
 
 def wav_to_signal(filename, path):
     """Read data from path/filename.wav, return the signal in time domain and its sampling freq"""
-    data, samplerate = soundfile.read(os.path.join(path, filename + ".wav"))
+    data, samplerate = wavfile.read(os.path.join(path, filename + ".wav"))
 
     return data, samplerate
 
