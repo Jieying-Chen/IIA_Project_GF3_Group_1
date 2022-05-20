@@ -11,7 +11,7 @@ def signal_to_wav(s, fs, filename, path):
 
 def wav_to_signal(filename, path):
     """Read data from path/filename.wav, return the signal in time domain and its sampling freq"""
-    data, samplerate = wavfile.read(os.path.join(path, filename + ".wav"))
+    samplerate, data= wavfile.read(os.path.join(path, filename + ".wav"))
 
     return data, samplerate
 
