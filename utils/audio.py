@@ -1,6 +1,7 @@
 from scipy.io.wavfile import write
 import os.path
 import sounddevice
+import soundfile
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -8,6 +9,12 @@ def signal_to_wav(s, fs, filename, path):
     """Write the signal s into path/filename.wav with sampling freq fs"""
 
     write(os.path.join(path, "{}.wav".format(filename)), fs, s)
+
+def wav_to_signal(filename, path):
+    """Read data from path/filename.wav, return the signal in time domain and its sampling freq"""
+    data, samplerate = soundfile.read(os.path.join(path, filename + ".wav"))
+
+    return data, samplerate
 
 def play_signal(s, fs, delay=0):
     """Play the signal s with sampling freq fs after delay seconds"""
@@ -24,6 +31,6 @@ def record(duration, fs):
     recording = sounddevice.rec(duration * fs, samplerate=fs, channels=1, blocking=True).flatten()
     print("Finish recording")
     plt.plot(recording)
-    plt.show()
+    plt.show(block=False)
 
     return recording
