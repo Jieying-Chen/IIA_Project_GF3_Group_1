@@ -5,11 +5,11 @@ import pandas as pd
 
 #convolute the chirp with a reversed chirp, return max response position as the end of synchronising signal
 
-def chirp_synchronize(input,fs= 48000, duration= 1):
+def chirp_synchronize(input, chirp_range,fs= 48000, duration= 1,):
     sample_times = np.linspace(0, duration, fs * duration)
-    chirp = 0.1 * scipy.signal.chirp(sample_times, 20, duration, 20000)
+    chirp = 0.1 * scipy.signal.chirp(sample_times, chirp_range[0], duration, chirp_range[1])
     chirp_reverse = chirp[::-1]
-    convolved = np.convolve(input, chirp_reverse)
+    convolved = scipy.signal.convolve(input, chirp_reverse)
     #plt.plot(abs(convoluted))
     #plt.show()
     end = np.argmax(abs(convolved))
@@ -38,7 +38,7 @@ def chirp_synchronize(input,fs= 48000, duration= 1):
 #         i+=1
 #    return event
 
-def impulse_detect(signal,fs,duration, window_time=0.1, threshold = 3):
+def impulse_detect(signal,fs,duration, window_time=0.1, threshold = 3): #signal = convulved with reverse chirp
     noise = np.std(signal[int(duration*fs*1.2):])       #need to change appropriately
     window_size = window_time*fs
     signal = pd.Series(signal)
