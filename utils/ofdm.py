@@ -8,7 +8,7 @@ def sub_width(fs, dft_length):
 
     return fs / dft_length
 
-def subcarrier_shift_gaussian(symbols, dft_length, fs, low_freq, high_freq, sigma):
+def subcarrier_shift_gaussian(symbols, dft_length, fs, low_freq, high_freq, sigma, bits_per_symbol, constellation='bpsk'):
 
     # Calculate the width of each bin
     bin = sub_width(fs, dft_length)
@@ -17,7 +17,11 @@ def subcarrier_shift_gaussian(symbols, dft_length, fs, low_freq, high_freq, sigm
     # Used subcarriers
     subs_per_block = high_idx - low_idx + 1
     block_num = ceil(symbols.size / subs_per_block)
-    symbols_padded = np.append(symbols, encode.qpsk_encode(np.zeros(2 * (block_num * subs_per_block - symbols.size))))
+    if constellation == 'qpsk':
+        symbols_padded = np.append(symbols, encode.qpsk_encode(np.zeros(bits_per_symbol * (block_num * subs_per_block - symbols.size))))
+    elif constellation == 'bpsk':
+        symbols_padded = np.append(symbols, encode.bpsk_encode(np.zeros(bits_per_symbol * (block_num * subs_per_block - symbols.size))))
+        
     # Total subcarriers
     bin_num = int(dft_length / 2 - 1)
     output = np.array([])
@@ -67,8 +71,9 @@ def ofdm_to_fourier(synced_ofdm, dft_length, cp_length):
 
 def deconvolve(fft, h, dft_length, fs, low_freq, high_freq):
 
-    H_abs = scipy.interpolate.interp1d(np.arange(h.size), abs(np.fft.fft(h)))
-    H_phase = scipy.interpolate.interp1d(np.arange(h.size), np.angle(np.fft.fft(h)))
+    if h.size > 1:
+        H_abs = scipy.interpolate.interp1d(np.arange(h.size), abs(np.fft.fft(h)), kind='nearest')
+        H_phase = scipy.interpolate.interp1d(np.arange(h.size), np.angle(np.fft.fft(h)), kind='nearest')
     bin = sub_width(fs, dft_length)
     low_idx = ceil(low_freq / bin)
     high_idx = floor(high_freq / bin)
@@ -76,9 +81,16 @@ def deconvolve(fft, h, dft_length, fs, low_freq, high_freq):
     spb = 1 + high_idx - low_idx 
     idx_range = np.arange(low_idx, high_idx + 1)
     freq_range = idx_range / dft_length * h.size
-    H_complex = H_abs(freq_range) * np.exp(1j*H_phase(freq_range))
+    if h.size > 1:
+        H_complex = H_abs(freq_range) * np.exp(1j*H_phase(freq_range))
+    else:
+        H_complex = np.tile(np.fft.fft(h), spb)
     output = np.array([])
     for row in np.reshape(fft, (-1, spb)):
         output = np.append(output, np.divide(row, H_complex))
     
+    import matplotlib.pyplot as plt
+    plt.plot(np.angle(output[:50], deg=True))
+    plt.show()
+
     return output

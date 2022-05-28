@@ -13,6 +13,12 @@ def qpsk_encode(bitarray):
 
     return output
 
+def bpsk_encode(bitarray):
+
+    output = -1 + 2 * bitarray
+
+    return output
+
 def zeros_padding(bitarray, dft_length, bits_per_symbol):
     """Return the input bit array padded with 0s so that the resulting bit array
     can be converted to a sequence of symbols whose size is divisible by dft_length/2-1"""
