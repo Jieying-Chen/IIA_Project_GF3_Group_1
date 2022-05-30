@@ -71,18 +71,14 @@ def ofdm_to_fourier(synced_ofdm, dft_length, cp_length):
 
 def deconvolve(fft, h, dft_length, fs, low_freq, high_freq):
 
-    if h.size > 1:
-        H_abs = scipy.interpolate.interp1d(np.arange(h.size), abs(np.fft.fft(h)), kind='nearest')
-        H_phase = scipy.interpolate.interp1d(np.arange(h.size), np.angle(np.fft.fft(h)), kind='nearest')
     bin = sub_width(fs, dft_length)
     low_idx = ceil(low_freq / bin)
     high_idx = floor(high_freq / bin)
 
     spb = 1 + high_idx - low_idx 
     idx_range = np.arange(low_idx, high_idx + 1)
-    freq_range = idx_range / dft_length * h.size
     if h.size > 1:
-        H_complex = H_abs(freq_range) * np.exp(1j*H_phase(freq_range))
+        H_complex = np.fft.fft(h, n=dft_length)[idx_range]
     else:
         H_complex = np.tile(np.fft.fft(h), spb)
     output = np.array([])
