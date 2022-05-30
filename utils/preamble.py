@@ -1,5 +1,9 @@
 import numpy as np
 import scipy.signal
+try:
+     from utils import ofdm,encode     #handles both file in utils folder and outside utils folder
+except:
+     import ofdm,encode
 
 def generate_chirp(duration, fs, low=20, high=20000, silence_duration=0, double=False):
     """Return a chirp signal using the given parameters
@@ -23,3 +27,43 @@ def generate_chirp(duration, fs, low=20, high=20000, silence_duration=0, double=
     
     return delayed_chirp
 
+def generate_known_ofdm(fs,dft_length,cp_length,low_freq,high_freq,encode_method,repeat_time, seed):
+    if encode_method == 'bpsk':
+        bits_per_symbol = 1
+    elif encode_method == 'qpsk':
+        bits_per_symbol = 2
+    
+
+    spb = ofdm.subcarriers_per_block(fs,dft_length,low_freq,high_freq)
+    np.random.seed(seed)
+    known_string = np.random.randint(2,size=2*spb)
+    known_string_stack = np.tile(known_string,repeat_time-1)    #generate one ofdm symbol with prefix (cp length normal), the rest without (cp length set to 0)
+
+    #convert string to complex symbols
+    if encode_method == 'qpsk':
+        symbols_first = encode.qpsk_encode(known_string)
+        symbols_rest = encode.qpsk_encode(known_string_stack)
+    elif encode_method == 'bpsk':
+        symbols_first = encode.bpsk_encode(known_string)
+        symbols_rest = encode.bpsk_encode(known_string_stack)
+
+    #print(symbols_rest[::spb])  #first complex info qpsk
+
+    #convert string of info to ofdm data
+    known_shifted_first = ofdm.subcarrier_shift_gaussian(symbols_first, dft_length, fs, low_freq, high_freq, 0.01, bits_per_symbol, constellation=encode_method)
+    known_ofdm_data_first = ofdm.symbols_to_ofdm(known_shifted_first, dft_length, cp_length,)
+    
+    #known_shifted_rest = ofdm.subcarrier_shift_gaussian(symbols_rest, dft_length, fs, low_freq, high_freq, 0.01, bits_per_symbol, constellation=encode_method)
+    known_shifted_rest = np.tile(known_shifted_first,repeat_time-1)
+    known_ofdm_data_rest = ofdm.symbols_to_ofdm(known_shifted_rest, dft_length, cp_length=0)
+
+    #combine the two parts
+    known_ofdm_data = np.concatenate((known_ofdm_data_first,known_ofdm_data_rest))
+    return known_ofdm_data
+
+
+if __name__ == "__main__":      #used for debugging functions, only run if running this file alone
+    known_ofdm = generate_known_ofdm(fs = 48000,dft_length=8192,cp_length=1024,low_freq=1000,high_freq=10000,encode_method='qpsk',repeat_time=5, seed=0)
+    a = known_ofdm[1024:]
+    spb = 1536
+    print(a[200::8192]) #should be the same
