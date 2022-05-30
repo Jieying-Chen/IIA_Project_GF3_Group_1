@@ -12,7 +12,7 @@ def channel_output(h, x, noise=False, sigma=0.1):
     :return: output signal
     """
 
-    y = np.convolve(h, x)
+    y = scipy.signal.convolve(h, x)
     if noise:
         add_noise = sigma * np.random.rand(y.size)
         return y + add_noise
