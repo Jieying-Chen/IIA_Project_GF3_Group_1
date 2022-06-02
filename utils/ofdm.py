@@ -13,10 +13,7 @@ def sub_width(fs, dft_length):
     return fs / dft_length
 
 def subcarrier_shift_gaussian(symbols, dft_length, fs, low_freq, high_freq, sigma, bits_per_symbol, constellation='qpsk'):
-<<<<<<< Updated upstream
-=======
     #put constellation symbols into right bins and add gaussian noise for other bins up to fs/2
->>>>>>> Stashed changes
 
     # Calculate the width of each bin
     bin = sub_width(fs, dft_length)
@@ -89,15 +86,6 @@ def deconvolve(fft, H, dft_length, fs, low_freq, high_freq, if_known_ofdm = Fals
 
     encoded_subs_per_block = high_idx - low_idx + 1
     idx_range = np.arange(low_idx, high_idx + 1)
-<<<<<<< Updated upstream
-    if h.size > 1:
-        H_complex = np.fft.fft(h, n=dft_length)[idx_range]
-    else:
-        H_complex = np.tile(np.fft.fft(h), encoded_subs_per_block)
-    output = np.array([])
-    for row in np.reshape(fft, (-1, encoded_subs_per_block)):
-        output = np.append(output, np.divide(row, H_complex))
-=======
     # if h.size > 1:
     #     H_complex = np.fft.fft(h, n=dft_length)[idx_range]
     # else:
@@ -114,7 +102,6 @@ def deconvolve(fft, H, dft_length, fs, low_freq, high_freq, if_known_ofdm = Fals
     output = np.array([])
     for row in np.reshape(fft, (-1, encoded_subs_per_block)):
         output = np.append(output, np.divide(row, H_subcarrier))
->>>>>>> Stashed changes
     
     # import matplotlib.pyplot as plt
     # plt.plot(np.angle(output[:50], deg=True))

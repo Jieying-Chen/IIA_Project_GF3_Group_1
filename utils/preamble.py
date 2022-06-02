@@ -1,5 +1,7 @@
+from tracemalloc import start
 import numpy as np
 import scipy.signal
+from math import ceil
 try:
      from utils import ofdm,encode     #handles both file in utils folder and outside utils folder
 except:
@@ -18,7 +20,7 @@ def generate_chirp(duration, fs, low=20, high=20000, silence_duration=0, double=
     """
     sample_times = np.linspace(0, duration, fs * duration)
     chirp = scipy.signal.chirp(sample_times, low, duration, high)
-    silence = np.zeros(fs * silence_duration)
+    silence = np.zeros(ceil(fs * silence_duration))
 
     if double:
         delayed_chirp = np.append(silence, np.tile(chirp, 2))
@@ -51,7 +53,7 @@ def generate_known_ofdm(fs,dft_length,cp_length,low_freq,high_freq,encode_method
 
     #convert string of info to ofdm data
     known_shifted_first = ofdm.subcarrier_shift_gaussian(symbols_first, dft_length, fs, low_freq, high_freq, 0.01, bits_per_symbol, constellation=encode_method)
-    known_ofdm_data_first = ofdm.symbols_to_ofdm(known_shifted_first, dft_length, cp_length,)
+    known_ofdm_data_first = ofdm.symbols_to_ofdm(known_shifted_first, dft_length, cp_length)
     
     #known_shifted_rest = ofdm.subcarrier_shift_gaussian(symbols_rest, dft_length, fs, low_freq, high_freq, 0.01, bits_per_symbol, constellation=encode_method)
     known_shifted_rest = np.tile(known_shifted_first,repeat_time-1)
@@ -61,9 +63,29 @@ def generate_known_ofdm(fs,dft_length,cp_length,low_freq,high_freq,encode_method
     known_ofdm_data = np.concatenate((known_ofdm_data_first,known_ofdm_data_rest))
     return known_ofdm_data
 
+def transmission_start(fs,low_freq,high_freq,silence_duration):
+    start_audio = generate_chirp(1, fs, low=low_freq, high=high_freq, silence_duration=silence_duration, double=False)
+    return start_audio
+
+def transmission_end(fs,low_freq,high_freq,silence_duration):
+    chirp = generate_chirp(1, fs, low=low_freq, high=high_freq, silence_duration=0, double=False)
+    silence = np.zeros(ceil(fs * silence_duration))
+    end_audio = np.append(chirp,silence)
+    return end_audio
+
+def frame_assemble(chirp,generate_known_ofdm,data):
+    return np.concatenate((chirp,generate_known_ofdm,data,generate_known_ofdm,chirp))
 
 if __name__ == "__main__":      #used for debugging functions, only run if running this file alone
-    known_ofdm = generate_known_ofdm(fs = 48000,dft_length=8192,cp_length=1024,low_freq=1000,high_freq=10000,encode_method='qpsk',repeat_time=5, seed=0)
-    a = known_ofdm[1024:]
-    spb = 1536
-    print(a[200::8192]) #should be the same
+    # known_ofdm = generate_known_ofdm(fs = 48000,dft_length=8192,cp_length=1024,low_freq=1000,high_freq=10000,encode_method='qpsk',repeat_time=5, seed=0)
+    # a = known_ofdm[1024:]
+    # spb = 1536
+    # print(a[200::8192]) #should be the same
+    import sounddevice as sd
+    import matplotlib.pyplot as plt
+    fs = 48000
+    start_header = transmission_start(fs,1000,10000,1.2)
+    plt.plot(start_header)
+    plt.show()
+    sd.play(start_header,fs,blocking=True)
+    
