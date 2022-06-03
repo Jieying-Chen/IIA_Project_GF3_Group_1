@@ -118,7 +118,8 @@ def subcarriers_per_block(fs,dft_length,low_freq,high_freq):
     return subs_per_block
 
 
-def known_ofdm_estimate(received_ofdm_data,repeat_times,spb,known_ofdm_data,dft_length,low_freq,high_freq,fs):
+def known_ofdm_estimate(received_ofdm_data,repeat_times,known_ofdm_data,dft_length,low_freq,high_freq,fs):
+    spb = subcarriers_per_block(fs,dft_length,low_freq,high_freq)
     stacked = np.sum(np.reshape(received_ofdm_data, (-1, spb)),axis=0)/repeat_times     #average the received ofdm symbols as they're all the same
     known_stacked = np.fft.fft(np.sum(np.reshape(known_ofdm_data, (-1, dft_length)),axis=0)/repeat_times)
     bin = sub_width(fs, dft_length)
