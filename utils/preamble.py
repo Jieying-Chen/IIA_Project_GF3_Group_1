@@ -1,3 +1,4 @@
+from time import time
 from tracemalloc import start
 import numpy as np
 import scipy.signal
@@ -61,7 +62,7 @@ def generate_known_ofdm(fs,dft_length,cp_length,low_freq,high_freq,encode_method
 
     #combine the two parts
     known_ofdm_data = np.concatenate((known_ofdm_data_first,known_ofdm_data_rest))
-    return known_ofdm_data
+    return known_ofdm_data,symbols_first
 
 def transmission_start(fs,low_freq,high_freq,silence_duration):
     start_audio = generate_chirp(1, fs, low=low_freq, high=high_freq, silence_duration=silence_duration, double=False)
@@ -75,6 +76,13 @@ def transmission_end(fs,low_freq,high_freq,silence_duration):
 
 def frame_assemble(chirp,generate_known_ofdm,data):
     return np.concatenate((chirp,generate_known_ofdm,data,generate_known_ofdm,chirp))
+
+def load_known_ofdm(CP_LENGTH = 512,repeat_time = 4):
+    known_ofdm_symbol = np.load("known_ofdm_symbol.npy")
+    time_domain = np.fft.ifft(known_ofdm_symbol)
+    cyclic_prefix = time_domain[-CP_LENGTH:]
+    stacked = np.tile(time_domain,4)
+    return np.append(cyclic_prefix,stacked)
 
 if __name__ == "__main__":      #used for debugging functions, only run if running this file alone
     # known_ofdm = generate_known_ofdm(fs = 48000,dft_length=8192,cp_length=1024,low_freq=1000,high_freq=10000,encode_method='qpsk',repeat_time=5, seed=0)
