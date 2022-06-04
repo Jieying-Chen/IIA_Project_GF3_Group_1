@@ -10,7 +10,7 @@ def qpsk_encode(bitarray):
     imag = bitarray[0::2]
     real = bitarray[1::2]
     output = 1 - 2 * real + 1j * (1 - 2 * imag)
-    return output
+    return output / np.sqrt(2)
 
 def bpsk_encode(bitarray):
 
