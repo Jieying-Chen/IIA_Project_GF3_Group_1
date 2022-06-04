@@ -37,6 +37,32 @@ def subcarrier_shift_gaussian(symbols, dft_length, fs, low_freq, high_freq, sigm
 
     return output
 
+def subcarrier_shift_ofdm(symbols, dft_length, fs, low_freq, high_freq, bits_per_symbol=2, seed=0):
+    # put constellation symbols into right bins and add random ofdm symbols to the other bins up to fs/2
+
+    # Calculate the width of each bin
+    bin = sub_width(fs, dft_length)
+    low_idx = ceil(low_freq / bin)
+    high_idx = floor(high_freq / bin)
+
+    # Number of subcarriers with information
+    encoded_subs_per_block = high_idx - low_idx + 1
+    block_num = ceil(symbols.size / encoded_subs_per_block)
+    symbols_padded = np.append(symbols, encode.qpsk_encode(np.zeros(bits_per_symbol * (block_num * encoded_subs_per_block - symbols.size))))
+
+    # Total subcarriers to modulate
+    total_subs_per_block = int(dft_length / 2 - 1)
+    output = np.array([])
+    np.random.seed(seed)
+    for row in np.reshape(symbols_padded, (-1, encoded_subs_per_block)):
+        pre_phases = np.pi * (1 / 4 + 1 / 2 * np.random.randint(0, 3, low_idx - 1))
+        pre = np.exp(1j * pre_phases)
+        post_phases = np.pi * (1 / 4 + 1 / 2 * np.random.randint(0, 3, total_subs_per_block - high_idx))
+        post = np.exp(1j * post_phases)
+        output = np.concatenate((output, pre, row, post))
+
+    return output
+
 def subcarrier_extract(fft, dft_length, fs, low_freq, high_freq):
 
     bin = sub_width(fs, dft_length)
@@ -131,7 +157,18 @@ def known_ofdm_estimate(received_ofdm_data,repeat_times,known_ofdm_data,dft_leng
     H = stacked/known_discarded
     return H
 
+def known_ofdm_estimate_edited(received_known, known_ofdm_data, dft_length, cp_length, low_freq, high_freq, fs):
+    spb = subcarriers_per_block(fs, dft_length, low_freq, high_freq)
+    avg_received_known = np.average(np.reshape(received_known, (-1, dft_length)), axis=0)
+    received_fft = np.fft.fft(avg_received_known)
+    known_fft = np.fft.fft(known_ofdm_data)
+    bin = sub_width(fs, dft_length)
+    low_idx = ceil(low_freq / bin)
+    high_idx = floor(high_freq / bin)
+    idx_range = np.arange(low_idx, high_idx + 1)
 
+    H = np.divide(received_fft, known_fft)
+    return H[idx_range]
 
 if __name__ == "__main__":      #used for debugging functions, only run if running this file alone
     known_ofdm_data = np.load("known_ofdm_data.npy")
