@@ -28,7 +28,7 @@ def record(duration, fs):
 
     print("Start recording for {} seconds...".format(duration))
     recording = sounddevice.rec(duration * fs, samplerate=fs, channels=1, blocking=True).flatten()
-    print("Finish recording")
+    print("Finish recording\n")
     plt.plot(recording)
     plt.show(block=False)
 
