@@ -131,6 +131,24 @@ def known_ofdm_estimate(received_ofdm_data,repeat_times,known_ofdm_data,dft_leng
     H = stacked/known_discarded
     return H
 
+def known_ofdm_estimate_edited(received_known, known_ofdm_data, dft_length, cp_length, low_freq, high_freq, fs):
+    spb = subcarriers_per_block(fs, dft_length, low_freq, high_freq)
+    avg_received_known = np.average(np.reshape(received_known, (-1, dft_length)), axis=0)
+    received_fft = np.fft.fft(avg_received_known)
+    known_fft = np.fft.fft(known_ofdm_data)
+    bin = sub_width(fs, dft_length)
+    low_idx = ceil(low_freq / bin)
+    high_idx = floor(high_freq / bin)
+    idx_range = np.arange(low_idx, high_idx + 1)
+
+    H = np.divide(received_fft, known_fft)
+    # import matplotlib.pyplot as plt
+    # plt.plot(abs(np.fft.ifft(H)))
+    # plt.show()
+    # h = np.fft.ifft(H)[:cp_length]
+    # H_trimmed = np.fft.fft(h, n=dft_length)
+    return H[idx_range]
+
 
 
 if __name__ == "__main__":      #used for debugging functions, only run if running this file alone
