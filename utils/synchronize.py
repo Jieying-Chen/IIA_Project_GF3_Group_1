@@ -2,9 +2,12 @@ import numpy as np
 import scipy.signal
 import matplotlib.pyplot as plt
 import pandas as pd
+<<<<<<< HEAD
 from utils import ofdm
 from math import ceil, floor
 
+=======
+>>>>>>> f2f846bca001a1fa2415d6edf840f65dca60e953
 
 #convolute the chirp with a reversed chirp, return max response position as the end of synchronising signal
 
@@ -37,6 +40,7 @@ def impulse_detect(signal,fs,duration, window_time=0.1, threshold = 3): #signal 
     event_max = [np.argmax(event_max[i])+event[i]-event_max_window for i in range(len(event))]
     return event_max
 
+<<<<<<< HEAD
 def phase_difference(received_signal, event,known_ofdm_data,CP_LENGTH,DFT_LENGTH,fs,low_freq,high_freq,repeat_time):
     #plot the phase difference between the estimation of channel with the two known ofdm symbol
 
@@ -72,3 +76,5 @@ def phase_correction(deconvolved, sample_shift, dft_length, fs, low_freq, high_f
 
     return output
 
+=======
+>>>>>>> f2f846bca001a1fa2415d6edf840f65dca60e953
