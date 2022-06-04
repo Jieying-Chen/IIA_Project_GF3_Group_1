@@ -37,7 +37,6 @@ def impulse_detect(signal,fs,duration, window_time=0.1, threshold = 3): #signal 
 
 def phase_difference(received_signal, event,known_ofdm_data,CP_LENGTH,DFT_LENGTH,fs,low_freq,high_freq,repeat_time):
     #plot the phase difference between the estimation of channel with the two known ofdm symbol
-
     spb = ofdm.subcarriers_per_block(fs,DFT_LENGTH,low_freq,high_freq)
     received_ofdm_1 = received_signal[event[0]+48000:event[0]+48000+known_ofdm_data.size]
     received_ofdm_1 = received_ofdm_1[CP_LENGTH:]
