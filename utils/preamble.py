@@ -74,8 +74,8 @@ def transmission_end(fs,low_freq,high_freq,silence_duration):
     end_audio = np.append(chirp,silence)
     return end_audio
 
-def frame_assemble(chirp,generate_known_ofdm,data):
-    return np.concatenate((chirp,generate_known_ofdm,data,generate_known_ofdm,chirp))
+def frame_assemble(chirp,known_ofdm,data):
+    return np.concatenate((chirp,np.real(known_ofdm),np.real(data),np.real(known_ofdm),chirp))
 
 def load_known_ofdm(CP_LENGTH = 512,repeat_time = 4):
     known_ofdm_symbol = np.load("known_ofdm_symbol.npy")
