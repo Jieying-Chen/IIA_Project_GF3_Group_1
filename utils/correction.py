@@ -61,8 +61,6 @@ def regression_correction(spb,slope1,intercept1,H1,H2,deconvolved,symbol_per_fra
     plt.title("correctioned result")
     plt.show()
     slope = slope1+slope2
-    intercept = intercept1+intercept2
-    print(slope,intercept)
 
     #phase correction, given slope, intercept
     #assume slope and intercept increament linearly between all unknown ofdm symbols
