@@ -41,14 +41,6 @@ def file_decode(decoded):
     n_range = int(8 * (len(decoded)//8))
     x = bitarray(list(decoded[32:n_range]))
     s = x.tobytes().decode('ascii', errors='ignore')
-    slist = list(s)
-
-    for i in range(len(slist)):
-        if slist[i] == '\0':
-            slist[i] = '\n'
-            break
-
-    s = ''.join(slist)
 
     s = str(size) + ' ' + s
     f = open(output_filename, mode='w')
