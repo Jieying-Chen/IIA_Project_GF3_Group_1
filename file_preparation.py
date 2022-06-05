@@ -53,11 +53,9 @@ def file_decode(decoded):
         x = bitarray(list(decoded[32:n_range]))
         s = x.tobytes().decode('ascii', errors='ignore')
 
-        s = str(size) + ' ' + s
+        print(size)
 
         f = open(os.path.join(output_dir, output_filename), mode='w')
-        #f = open(output_filename, mode='w')
-        print(s)
         f.write(s)
         f.close()
         return
@@ -75,25 +73,5 @@ def file_decode(decoded):
 if __name__ == "__main__":
 
     encode = file_encode()
-    cwd = os.getcwd()
-    output_dir = os.path.join(cwd, 'plugfest')
-
-    file_size = encode[0:32]
-    sizeba = bitarray(list(file_size), endian='little')
-    size = ba2int(sizeba)
-
-    first_few_words_ba = bitarray(list(encode[32:160]))
-    first_few_words = first_few_words_ba.tobytes().decode('ascii', errors='ignore')
-    print(first_few_words)
-    decoded = encode
-    file_type = str(input("Enter file type: "))
-    file_name_size = int(input("Enter file name length: "))
-    output_filename = "text.txt"
-    n_range = int(8 * (len(decoded)//8))
-    x = bitarray(list(decoded[32:n_range]))
-    s = x.tobytes().decode('ascii', errors='ignore')
-    s = str(size) + ' ' + s
-    f = open(os.path.join(output_dir, output_filename), mode='w')
-    f.write(s)
-    f.close()
+    file_decode(encode)
 
