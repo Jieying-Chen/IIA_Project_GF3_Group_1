@@ -3,6 +3,7 @@ from bitarray.util import int2ba, ba2int
 import numpy as np
 from utils import binary_decode
 import os
+import codecs
 
 
 def file_encode(filesize = 114514, filename = 'file', txt_name = 'file_test.txt'):
@@ -31,6 +32,8 @@ def file_encode(filesize = 114514, filename = 'file', txt_name = 'file_test.txt'
 
 
 def file_decode(decoded):
+    codecs.register_error('replace_with_space', lambda e: (' ',e.start + 1))
+    #print unicode('ABC\x97abc', encoding='utf-8', errors='replace_with_space')
     '''decode binary string using ascii'''
     cwd = os.getcwd()
     output_dir = os.path.join(cwd, 'plugfest')
@@ -40,7 +43,7 @@ def file_decode(decoded):
     size = ba2int(sizeba)
 
     first_few_words_ba = bitarray(list(decoded[32:800]))
-    first_few_words = first_few_words_ba.tobytes().decode('ascii', errors='ignore')
+    first_few_words = first_few_words_ba.tobytes().decode('ascii', errors='replace_with_space')
     print(first_few_words)
 
     file_type = str(input("Enter file type: "))
@@ -51,7 +54,7 @@ def file_decode(decoded):
         output_filename = "text.txt"
         n_range = int(8 * (len(decoded)//8))
         x = bitarray(list(decoded[32:n_range]))
-        s = x.tobytes().decode('ascii', errors='ignore')
+        s = x.tobytes().decode('ascii', errors='replace_with_space')
 
         print(size)
 
@@ -72,6 +75,8 @@ def file_decode(decoded):
 
 if __name__ == "__main__":
 
-    encode = file_encode()
+    encode = file_encode(filesize=39955,filename='Louis.txt', txt_name='Louis_front.txt')
+    print(type(encode))
+    print(encode[32:64])
     file_decode(encode)
 

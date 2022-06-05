@@ -1,4 +1,3 @@
-from subprocess import STD_OUTPUT_HANDLE
 from scipy.io import wavfile
 import os.path
 import sounddevice
