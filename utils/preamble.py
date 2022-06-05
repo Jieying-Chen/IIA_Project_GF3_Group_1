@@ -74,14 +74,14 @@ def transmission_end(fs,low_freq,high_freq,silence_duration):
     end_audio = np.append(chirp,silence)
     return end_audio
 
-def frame_assemble(chirp,generate_known_ofdm,data):
-    return np.concatenate((chirp,generate_known_ofdm,data,generate_known_ofdm,chirp))
+def frame_assemble(chirp,known_ofdm,data):
+    return np.concatenate((chirp,np.real(known_ofdm),np.real(data),np.real(known_ofdm),chirp))
 
 def load_known_ofdm(CP_LENGTH = 512,repeat_time = 4):
     known_ofdm_symbol = np.load("known_ofdm_symbol.npy")
     time_domain = np.fft.ifft(known_ofdm_symbol)
     cyclic_prefix = time_domain[-CP_LENGTH:]
-    stacked = np.tile(time_domain,4)
+    stacked = np.tile(time_domain, repeat_time)
     return np.append(cyclic_prefix,stacked)
 
 if __name__ == "__main__":      #used for debugging functions, only run if running this file alone

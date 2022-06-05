@@ -5,7 +5,7 @@ from math import ceil, floor
 import scipy
 
 
-def phase_correction(deconvolved, sample_shift, dft_length, fs, low_freq, high_freq):
+def phase_correction(deconvolved, sample_shift, dft_length, cp_length, fs, low_freq, high_freq, chirp, repeat_times=4):
 
     spb = ofdm.subcarriers_per_block(fs, dft_length , low_freq, high_freq)
     bin = ofdm.sub_width(fs, dft_length)
@@ -15,9 +15,13 @@ def phase_correction(deconvolved, sample_shift, dft_length, fs, low_freq, high_f
     omega_range = idx_range / dft_length * 2 * np.pi
     deconvolved = np.reshape(deconvolved, (-1, spb))
     output = np.array([])
-    for i in range(deconvolved.shape[0]):
+    num_of_ofdm = deconvolved.shape[0]
+    total_interval_samples =(1+num_of_ofdm) * cp_length + (repeat_times+num_of_ofdm) * dft_length
+    print('total_interval_samples:', total_interval_samples)
+    for i in range(num_of_ofdm):
         to_correct = deconvolved[i]
-        cumulative_shift = i / deconvolved.shape[0] * sample_shift
+        # cumulative_shift = i * (dft_length+cp_length) / total_interval_samples * sample_shift
+        cumulative_shift = i / num_of_ofdm * sample_shift
         multiplier = np.exp(-1j * omega_range * cumulative_shift)
         output = np.append(output, np.divide(to_correct, multiplier))
 
@@ -78,3 +82,29 @@ def regression_correction(spb,slope1,intercept1,H1,H2,deconvolved,symbol_per_fra
 
     deconvolved = corrected
     return deconvolved
+
+
+def phase_correction_edited(deconvolved, sample_shift, dft_length, cp_length, chirp_duration, fs, low_freq, high_freq,ori_length, repeat_time = 4):
+
+    spb = ofdm.subcarriers_per_block(fs, dft_length , low_freq, high_freq)
+    bin = ofdm.sub_width(fs, dft_length)
+    low_idx = ceil(low_freq / bin)
+    high_idx = floor(high_freq / bin)
+    idx_range = np.arange(low_idx, high_idx + 1)
+    omega_range = idx_range / dft_length * 2 * np.pi
+    deconvolved = np.reshape(deconvolved, (-1, spb))
+    output = np.array([])
+
+    k = sample_shift / ori_length
+    left_end = k * (chirp_duration*fs + cp_length + repeat_time * dft_length)
+    right_end = k * (ori_length - (cp_length + repeat_time * dft_length))
+    each_ofdm = (right_end - left_end) / deconvolved.shape[0] 
+
+    
+    for i in range(deconvolved.shape[0]):
+        to_correct = deconvolved[i]
+        cumulative_shift = i * each_ofdm + left_end * 0.8
+        multiplier = np.exp(-1j * omega_range * cumulative_shift)
+        output = np.append(output, np.divide(to_correct, multiplier))
+
+    return output
