@@ -37,5 +37,6 @@ def ldpc_encode(info):
     #pad with zero such that info is integer times of c.K
     pad = np.zeros(info.size%c.K)
     info = np.concatenate((info,pad))
-    encoded = np.array([c.encode(info[i*c.K:(i+1)*c.K]) for i in range(info.size//c.K)])
+    encoded = np.array([c.encode(info[i*c.K:(i+1)*c.K]) for i in range(info.size//c.K)]).reshape((-1))
+
     return encoded
