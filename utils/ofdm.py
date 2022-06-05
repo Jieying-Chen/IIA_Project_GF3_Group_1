@@ -55,9 +55,9 @@ def subcarrier_shift_ofdm(symbols, dft_length, fs, low_freq, high_freq, bits_per
     output = np.array([])
     np.random.seed(seed)
     for row in np.reshape(symbols_padded, (-1, encoded_subs_per_block)):
-        pre_phases = np.pi * (1 / 4 + 1 / 2 * np.random.randint(0, 3, low_idx - 1))
+        pre_phases = np.pi * (1 / 4 + 1 / 2 * np.random.randint(0, 4, low_idx - 1))
         pre = np.exp(1j * pre_phases)
-        post_phases = np.pi * (1 / 4 + 1 / 2 * np.random.randint(0, 3, total_subs_per_block - high_idx))
+        post_phases = np.pi * (1 / 4 + 1 / 2 * np.random.randint(0, 4, total_subs_per_block - high_idx))
         post = np.exp(1j * post_phases)
         output = np.concatenate((output, pre, row, post))
 
@@ -155,3 +155,38 @@ def known_ofdm_estimate_edited(received_known, known_ofdm_data, dft_length, cp_l
 
     H = np.divide(received_fft, known_fft)
     return H[idx_range]
+
+def unwrap_phase(H, dft_length):
+    phase = np.angle(H[:dft_length//2])
+    for i in range(1, len(phase)):
+        if phase[i] - phase[i-1] > 1.5*np.pi:
+            phase[i:] -= 2*np.pi
+        elif phase[i-1] - phase[i] > 1.5*np.pi:
+            phase[i:] += 2*np.pi          
+    return phase
+
+def known_ofdm_estimate_unwrap(received_known, known_ofdm_data, dft_length, cp_length, low_freq, high_freq, fs):
+    spb = subcarriers_per_block(fs, dft_length, low_freq, high_freq)
+    avg_received_known = np.average(np.reshape(received_known, (-1, dft_length)), axis=0)
+    received_fft = np.fft.fft(avg_received_known)
+    known_fft = np.fft.fft(known_ofdm_data)
+    H = np.divide(received_fft, known_fft)
+
+    phase = unwrap_phase(H, dft_length)
+
+    bin = sub_width(fs, dft_length)
+    low_idx = ceil(low_freq / bin)
+    high_idx = floor(high_freq / bin)
+    idx_range = np.arange(low_idx, high_idx + 1)
+
+    from sklearn.linear_model import LinearRegression
+
+    y = phase[idx_range]
+    x = idx_range
+    
+    model = LinearRegression().fit(x[:, np.newaxis], y)
+    y_fit = model.predict(x[:, np.newaxis])
+
+    H_fit = abs(H[idx_range]) * np.exp(1j * y_fit)
+
+    return H_fit
