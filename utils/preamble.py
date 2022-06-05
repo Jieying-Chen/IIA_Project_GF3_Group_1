@@ -81,7 +81,11 @@ def load_known_ofdm(CP_LENGTH = 512,repeat_time = 4):
     known_ofdm_symbol = np.load("known_ofdm_symbol.npy")
     time_domain = np.fft.ifft(known_ofdm_symbol)
     cyclic_prefix = time_domain[-CP_LENGTH:]
+<<<<<<< HEAD
     stacked = np.tile(time_domain,repeat_time)
+=======
+    stacked = np.tile(time_domain, repeat_time)
+>>>>>>> 70b78e1c5f39535cececee9b76a42cd46ea445df
     return np.append(cyclic_prefix,stacked)
 
 if __name__ == "__main__":      #used for debugging functions, only run if running this file alone

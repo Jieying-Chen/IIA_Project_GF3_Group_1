@@ -1,5 +1,6 @@
 import numpy as np
 from math import ceil, floor
+import matplotlib as plt
 import scipy.interpolate
 try:
      from utils import encode
@@ -55,9 +56,9 @@ def subcarrier_shift_ofdm(symbols, dft_length, fs, low_freq, high_freq, bits_per
     output = np.array([])
     np.random.seed(seed)
     for row in np.reshape(symbols_padded, (-1, encoded_subs_per_block)):
-        pre_phases = np.pi * (1 / 4 + 1 / 2 * np.random.randint(0, 3, low_idx - 1))
+        pre_phases = np.pi * (1 / 4 + 1 / 2 * np.random.randint(0, 4, low_idx - 1))
         pre = np.exp(1j * pre_phases)
-        post_phases = np.pi * (1 / 4 + 1 / 2 * np.random.randint(0, 3, total_subs_per_block - high_idx))
+        post_phases = np.pi * (1 / 4 + 1 / 2 * np.random.randint(0, 4, total_subs_per_block - high_idx))
         post = np.exp(1j * post_phases)
         output = np.concatenate((output, pre, row, post))
 
@@ -81,8 +82,8 @@ def symbols_to_ofdm(symbols, dft_length, cp_length):        #add zero, complex c
     reshaped = np.reshape(symbols, (-1, mod_subs_per_block))
     x = np.array([])
     for row in reshaped:
-        first_half = np.append(0, row)
-        second_half = np.append(0, np.conjugate(row)[::-1])
+        first_half = np.append(1, row)
+        second_half = np.append(1, np.conjugate(row)[::-1])
         idft = np.fft.ifft(np.append(first_half, second_half))
         if cp_length==0:
             cyclic_prefix = np.array([])
@@ -143,20 +144,6 @@ def subcarriers_per_block(fs,dft_length,low_freq,high_freq):
     subs_per_block = high_idx - low_idx + 1
     return subs_per_block
 
-
-def known_ofdm_estimate(received_ofdm_data,repeat_times,known_ofdm_data,dft_length,low_freq,high_freq,fs):
-    spb = subcarriers_per_block(fs,dft_length,low_freq,high_freq)
-    stacked = np.sum(np.reshape(received_ofdm_data, (-1, spb)),axis=0)/repeat_times     #average the received ofdm symbols as they're all the same
-    known_stacked = np.fft.fft(np.sum(np.reshape(known_ofdm_data, (-1, dft_length)),axis=0)/repeat_times)
-    bin = sub_width(fs, dft_length)
-    low_idx = ceil(low_freq / bin)
-    high_idx = floor(high_freq / bin)
-    idx_range = np.arange(low_idx, high_idx + 1)
-    known_discarded = known_stacked[idx_range]
-
-    H = stacked/known_discarded
-    return H
-
 def known_ofdm_estimate_edited(received_known, known_ofdm_data, dft_length, cp_length, low_freq, high_freq, fs):
     spb = subcarriers_per_block(fs, dft_length, low_freq, high_freq)
     avg_received_known = np.average(np.reshape(received_known, (-1, dft_length)), axis=0)
@@ -170,7 +157,10 @@ def known_ofdm_estimate_edited(received_known, known_ofdm_data, dft_length, cp_l
     H = np.divide(received_fft, known_fft)
     return H[idx_range]
 
-if __name__ == "__main__":      #used for debugging functions, only run if running this file alone
-    known_ofdm_data = np.load("known_ofdm_data.npy")
-    discarded_known = np.load("utils\discarded.npy")
-    known_ofdm_estimate(discarded_known,5,1536,known_ofdm_data[1024:],8192,1000,10000,48000)
+def unwrap_phase(phase):
+    for i in range(1, len(phase)):
+        if phase[i] - phase[i-1] > 1.5*np.pi:
+            phase[i:] -= 2*np.pi
+        elif phase[i-1] - phase[i] > 1.5*np.pi:
+            phase[i:] += 2*np.pi          
+    return phase
