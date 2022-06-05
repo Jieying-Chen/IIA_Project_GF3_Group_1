@@ -20,7 +20,8 @@ def phase_correction(deconvolved, sample_shift, dft_length, cp_length, fs, low_f
     print('total_interval_samples:', total_interval_samples)
     for i in range(num_of_ofdm):
         to_correct = deconvolved[i]
-        cumulative_shift = i * (dft_length+cp_length) / total_interval_samples * sample_shift
+        # cumulative_shift = i * (dft_length+cp_length) / total_interval_samples * sample_shift
+        cumulative_shift = i / num_of_ofdm * sample_shift
         multiplier = np.exp(-1j * omega_range * cumulative_shift)
         output = np.append(output, np.divide(to_correct, multiplier))
 

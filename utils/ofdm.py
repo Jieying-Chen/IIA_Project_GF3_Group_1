@@ -1,5 +1,6 @@
 import numpy as np
 from math import ceil, floor
+import matplotlib as plt
 import scipy.interpolate
 try:
      from utils import encode
@@ -156,8 +157,7 @@ def known_ofdm_estimate_edited(received_known, known_ofdm_data, dft_length, cp_l
     H = np.divide(received_fft, known_fft)
     return H[idx_range]
 
-def unwrap_phase(H, dft_length):
-    phase = np.angle(H[:dft_length//2])
+def unwrap_phase(phase):
     for i in range(1, len(phase)):
         if phase[i] - phase[i-1] > 1.5*np.pi:
             phase[i:] -= 2*np.pi
