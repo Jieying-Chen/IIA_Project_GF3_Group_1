@@ -1,6 +1,7 @@
 from numbers import Real
 import numpy as np
 from math import ceil
+from utils import ldpc
 
 def qpsk_encode(bitarray):
     """Return a numpy array of QPSK symbols encoded from the input bit array"""
@@ -29,3 +30,12 @@ def zeros_padding(bitarray, dft_length, bits_per_symbol):
     bitarray = np.append(bitarray, np.zeros(bits_per_symbol * symbols_per_block * block_num - bitarray.size))
 
     return bitarray
+
+def ldpc_encode(info):
+    c = ldpc.code()
+
+    #pad with zero such that info is integer times of c.K
+    pad = np.zeros(info.size%c.K)
+    info = np.concatenate((info,pad))
+    encoded = np.array([c.encode(info[i*c.K:(i+1)*c.K]) for i in range(info.size//c.K)])
+    return encoded
