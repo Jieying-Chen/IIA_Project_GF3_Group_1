@@ -155,7 +155,7 @@ def known_ofdm_estimate_edited(received_known, known_ofdm_data, dft_length, cp_l
     idx_range = np.arange(low_idx, high_idx + 1)
 
     H = np.divide(received_fft, known_fft)
-    return H[idx_range],H
+    return H[idx_range], H
 
 def unwrap_phase(phase):
     for i in range(1, len(phase)):

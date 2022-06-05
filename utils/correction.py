@@ -48,7 +48,8 @@ def phase_difference(received_signal, event,known_ofdm_data,CP_LENGTH,DFT_LENGTH
     plt.show()
     return phase_diff,H1,H2
 
-def regression_correction(spb,slope1,start1,intercept1,H1,H2, deconvolved,symbol_per_frame):
+def regression_correction(spb,slope1,intercept1,H1,H2, deconvolved,symbol_per_frame):
+    
     x_2 = np.linspace(0,spb,num=spb)
     #intercept1 = (intercept1 - slope1 * start1) % (2*np.pi)
     correction1 = np.exp(-1j*(slope1*x_2+intercept1))  #compensate with the regression result from last block
@@ -67,24 +68,24 @@ def regression_correction(spb,slope1,start1,intercept1,H1,H2, deconvolved,symbol
     plt.show()
     slope = slope1+slope2
 
-    return slope
-    # intercept = intercept1+intercept2
-    # print(slope,intercept)
 
-    # #phase correction, given slope, intercept
-    # #assume slope and intercept increament linearly between all unknown ofdm symbols
-    # slopes = np.linspace(0,slope,num=symbol_per_frame)
-    # intercepts = np.linspace(0,intercept,num=symbol_per_frame)
-    # x_symbol = np.linspace(0,spb,num=spb)
-    # corrected = np.array([])
-    # deconvolved_reshape =  np.reshape(deconvolved,(-1,spb))
-    # #print(deconvolved_reshape.shape)
-    # for i in range(deconvolved_reshape.shape[0]):
-    #     phase_correct = np.exp((x_symbol*slopes[i]+intercepts[i])*1j)
-    #     corrected = np.append(corrected,deconvolved_reshape[i,:]*phase_correct)
+    intercept = intercept1+intercept2
+    print(slope,intercept)
 
-    # deconvolved = corrected
-    # return deconvolved
+    #phase correction, given slope, intercept
+    #assume slope and intercept increament linearly between all unknown ofdm symbols
+    slopes = np.linspace(0,slope,num=symbol_per_frame)
+    intercepts = np.linspace(0,intercept,num=symbol_per_frame)
+    x_symbol = np.linspace(0,spb,num=spb)
+    corrected = np.array([])
+    deconvolved_reshape =  np.reshape(deconvolved,(-1,spb))
+    #print(deconvolved_reshape.shape)
+    for i in range(deconvolved_reshape.shape[0]):
+        phase_correct = np.exp((x_symbol*slopes[i]+intercepts[i])*1j)
+        corrected = np.append(corrected,deconvolved_reshape[i,:]*phase_correct)
+
+    deconvolved = corrected
+    return deconvolved
 
 
 def phase_correction_edited(deconvolved, sample_shift, dft_length, cp_length, chirp_duration, fs, low_freq, high_freq,ori_length, repeat_time = 4):
