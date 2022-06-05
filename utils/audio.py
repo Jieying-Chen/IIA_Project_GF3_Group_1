@@ -1,8 +1,10 @@
+from subprocess import STD_OUTPUT_HANDLE
 from scipy.io import wavfile
 import os.path
 import sounddevice
 import numpy as np
 import matplotlib.pyplot as plt
+import time
 
 def signal_to_wav(s, fs, filename, path):
     """Write the signal s into path/filename.wav with sampling freq fs"""
@@ -27,7 +29,12 @@ def record(duration, fs):
     """Record and return the ambient sound for duration seconds with sampling freq fs"""
 
     print("Start recording for {} seconds...".format(duration))
-    recording = sounddevice.rec(duration * fs, samplerate=fs, channels=1, blocking=True).flatten()
+    recording = sounddevice.rec(duration * fs, samplerate=fs, channels=1).flatten()
+    key = input("Press Enter to stop recording")
+    
+    sounddevice.wait()
+
+    
     print("Finish recording\n")
     plt.plot(recording)
     plt.show(block=False)
