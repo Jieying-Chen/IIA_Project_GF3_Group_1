@@ -96,3 +96,4 @@ if __name__ == "__main__":
     f = open(os.path.join(output_dir, output_filename), mode='w')
     f.write(s)
     f.close()
+
