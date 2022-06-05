@@ -32,13 +32,8 @@ def phase_difference(received_signal, event,known_ofdm_data,CP_LENGTH,DFT_LENGTH
 
     spb = ofdm.subcarriers_per_block(fs,DFT_LENGTH,low_freq,high_freq)
     received_ofdm_1 = received_signal[event[0]+48000:event[0]+48000+known_ofdm_data.size]
-<<<<<<< HEAD
-    H1 = ofdm.known_ofdm_estimate_edited(received_ofdm_1[CP_LENGTH:],known_ofdm_data[CP_LENGTH:CP_LENGTH+DFT_LENGTH],DFT_LENGTH,CP_LENGTH,low_freq,high_freq,fs)
- 
-=======
     H1,_ = ofdm.known_ofdm_estimate_edited(received_ofdm_1[CP_LENGTH:],known_ofdm_data[CP_LENGTH:CP_LENGTH+DFT_LENGTH],DFT_LENGTH,CP_LENGTH,low_freq,high_freq,fs)
 
->>>>>>> 4201430b0976d0ed50507d437a467cec3c1e8c87
     received_ofdm_2 = received_signal[event[1]-known_ofdm_data.size:event[1]]
     #received_ofdm_2 = received_signal[event[0]+671616-known_ofdm_data.size:event[0]+671616]
     H2,_ = ofdm.known_ofdm_estimate_edited(received_ofdm_2[CP_LENGTH:],known_ofdm_data[CP_LENGTH:CP_LENGTH+DFT_LENGTH],DFT_LENGTH,CP_LENGTH,low_freq,high_freq,fs)
