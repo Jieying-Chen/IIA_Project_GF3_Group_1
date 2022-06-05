@@ -49,7 +49,7 @@ def subcarrier_shift_ofdm(symbols, dft_length, fs, low_freq, high_freq, bits_per
     # Number of subcarriers with information
     encoded_subs_per_block = high_idx - low_idx + 1
     block_num = ceil(symbols.size / encoded_subs_per_block)
-    symbols_padded = np.append(symbols, encode.qpsk_encode(np.zeros(bits_per_symbol * (block_num * encoded_subs_per_block - symbols.size))))
+    symbols_padded = np.append(symbols, encode.qpsk_encode(np.random.randint(0, 2, bits_per_symbol * (block_num * encoded_subs_per_block - symbols.size))))
 
     # Total subcarriers to modulate
     total_subs_per_block = int(dft_length / 2 - 1)
