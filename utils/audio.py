@@ -29,14 +29,32 @@ def record(duration, fs):
     """Record and return the ambient sound for duration seconds with sampling freq fs"""
 
     print("Start recording for {} seconds...".format(duration))
-    recording = sounddevice.rec(duration * fs, samplerate=fs, channels=1).flatten()
-    key = input("Press Enter to stop recording")
-    
-    sounddevice.wait()
+    recording = sounddevice.rec(int(duration * fs), samplerate=fs, channels=1, blocking=True).flatten()
 
     
     print("Finish recording\n")
     plt.plot(recording)
     plt.show(block=False)
+
+    return recording
+
+import queue
+import sys
+
+def record_manual(fs):
+    q = queue.Queue()
+    recording = []
+    def callback(indata, frames, time, status):
+        if status:
+            print(status, file=sys.stderr)
+        q.put(indata.copy())
+    try:
+        with sounddevice.InputStream(samplerate=fs, channels=1, callback=callback) as sdis:
+            print('Recording started   click interrupt to stop')
+            while True:
+                recording.append(q.get())
+    except KeyboardInterrupt:
+        recording = np.array(recording).flatten()
+        print('\nRecording finished: ', recording.size, 'samples are recorded')
 
     return recording
