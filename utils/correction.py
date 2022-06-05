@@ -17,7 +17,6 @@ def phase_correction(deconvolved, sample_shift, dft_length, cp_length, fs, low_f
     output = np.array([])
     num_of_ofdm = deconvolved.shape[0]
     total_interval_samples =(1+num_of_ofdm) * cp_length + (repeat_times+num_of_ofdm) * dft_length
-    print('total_interval_samples:', total_interval_samples)
     for i in range(num_of_ofdm):
         to_correct = deconvolved[i]
         # cumulative_shift = i * (dft_length+cp_length) / total_interval_samples * sample_shift
@@ -38,33 +37,30 @@ def phase_difference(received_signal, event,known_ofdm_data,CP_LENGTH,DFT_LENGTH
     #received_ofdm_2 = received_signal[event[0]+671616-known_ofdm_data.size:event[0]+671616]
     H2,_ = ofdm.known_ofdm_estimate_edited(received_ofdm_2[CP_LENGTH:],known_ofdm_data[CP_LENGTH:CP_LENGTH+DFT_LENGTH],DFT_LENGTH,CP_LENGTH,low_freq,high_freq,fs)
 
-
-    print(H1.shape , H2.shape)
-
-
     phase_diff = np.angle(np.divide(H1,H2))
     plt.plot(phase_diff)
     plt.title("phase difference of two channel estimation")
     plt.show()
     return phase_diff,H1,H2
 
-def regression_correction(spb,slope1,start1,intercept1,H1,H2, deconvolved,symbol_per_frame):
+def regression_correction(spb,slope1,intercept1,H1,H2, deconvolved,symbol_per_frame):
     x_2 = np.linspace(0,spb,num=spb)
     #intercept1 = (intercept1 - slope1 * start1) % (2*np.pi)
     correction1 = np.exp(-1j*(slope1*x_2+intercept1))  #compensate with the regression result from last block
     phase_diff_1 = np.angle(np.divide(H1,H2)*correction1)
     slope2, intercept2, r_value, p_value, std_err = scipy.stats.linregress(x_2, phase_diff_1)
-    plt.plot(phase_diff_1)
+    
+    """plt.plot(phase_diff_1)
     plt.plot(slope2*x_2+intercept2)
     plt.title("2nd regression")
-    plt.show()
+    plt.show()"""
 
 
     correction2 = np.exp(-(slope2*x_2+intercept2)*1j)
     phase_diff_3 = np.angle(np.divide(H1,H2)*correction1*correction2)
-    plt.plot(phase_diff_3)
+    """plt.plot(phase_diff_3)
     plt.title("correctioned result")
-    plt.show()
+    plt.show()"""
     slope = slope1+slope2
 
     return slope
@@ -87,7 +83,7 @@ def regression_correction(spb,slope1,start1,intercept1,H1,H2, deconvolved,symbol
     # return deconvolved
 
 
-def phase_correction_edited(deconvolved, sample_shift, dft_length, cp_length, chirp_duration, fs, low_freq, high_freq,ori_length, repeat_time = 4):
+"""def phase_correction_edited(deconvolved, sample_shift, dft_length, cp_length, chirp_duration, fs, low_freq, high_freq,ori_length, repeat_time = 4):
 
     spb = ofdm.subcarriers_per_block(fs, dft_length , low_freq, high_freq)
     bin = ofdm.sub_width(fs, dft_length)
@@ -110,4 +106,13 @@ def phase_correction_edited(deconvolved, sample_shift, dft_length, cp_length, ch
         multiplier = np.exp(-1j * omega_range * cumulative_shift)
         output = np.append(output, np.divide(to_correct, multiplier))
 
-    return output
+    return output"""
+
+def unwrap_phase(phase):
+    phase = phase.copy()
+    for i in range(1, len(phase)):
+        if phase[i] - phase[i-1] > 1.5*np.pi:
+            phase[i:] -= 2*np.pi
+        elif phase[i-1] - phase[i] > 1.5*np.pi:
+            phase[i:] += 2*np.pi          
+    return phase

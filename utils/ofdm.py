@@ -105,7 +105,7 @@ def ofdm_to_fourier(synced_ofdm, dft_length, cp_length):
     
     return output
 
-def deconvolve(fft, H, dft_length, fs, low_freq, high_freq, if_known_ofdm = False):
+def deconvolve(fft, H, dft_length, fs, low_freq, high_freq):
 
     bin = sub_width(fs, dft_length)
     low_idx = ceil(low_freq / bin)
@@ -113,17 +113,8 @@ def deconvolve(fft, H, dft_length, fs, low_freq, high_freq, if_known_ofdm = Fals
 
     encoded_subs_per_block = high_idx - low_idx + 1
     idx_range = np.arange(low_idx, high_idx + 1)
-    # if h.size > 1:
-    #     H_complex = np.fft.fft(h, n=dft_length)[idx_range]
-    # else:
-    #     H_complex = np.tile(np.fft.fft(h), encoded_subs_per_block)
 
-
-    if if_known_ofdm:   #H_subcarrier are the freq response at the subcarrier frequencies, if using known ofdm, only know the H value for these values
-        H_subcarrier = H
-    else:               #if using other estimation methods, know the entire channel frequency response, tho might not be at exactly subcarrier frequencies
-        h = np.fft.ifft(H)
-        H_subcarrier = np.fft.fft(h,n=dft_length)[idx_range]
+    H_subcarrier = H[idx_range]
 
     #return fft-ed values with the channel freq response
     output = np.array([])
@@ -155,12 +146,4 @@ def known_ofdm_estimate_edited(received_known, known_ofdm_data, dft_length, cp_l
     idx_range = np.arange(low_idx, high_idx + 1)
 
     H = np.divide(received_fft, known_fft)
-    return H[idx_range],H
-
-def unwrap_phase(phase):
-    for i in range(1, len(phase)):
-        if phase[i] - phase[i-1] > 1.5*np.pi:
-            phase[i:] -= 2*np.pi
-        elif phase[i-1] - phase[i] > 1.5*np.pi:
-            phase[i:] += 2*np.pi          
-    return phase
+    return H[idx_range], H
