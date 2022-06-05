@@ -46,7 +46,7 @@ def phase_difference(received_signal, event,known_ofdm_data,CP_LENGTH,DFT_LENGTH
 
 def regression_correction(spb,slope1,start1,intercept1,H1,H2, deconvolved,symbol_per_frame):
     x_2 = np.linspace(0,spb,num=spb)
-    intercept1 = (intercept1 - slope1 * start1) % (2*np.pi)
+    #intercept1 = (intercept1 - slope1 * start1) % (2*np.pi)
     correction1 = np.exp(-1j*(slope1*x_2+intercept1))  #compensate with the regression result from last block
     phase_diff_1 = np.angle(np.divide(H1,H2)*correction1)
     slope2, intercept2, r_value, p_value, std_err = scipy.stats.linregress(x_2, phase_diff_1)
