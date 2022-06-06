@@ -32,7 +32,7 @@ def zeros_padding(bitarray, dft_length, bits_per_symbol):
     return bitarray
 
 def ldpc_encode(info):
-    c = ldpc.code()
+    c = ldpc.code(standard = "802.16", rate = '1/2', z  = 64)
 
     #pad with zero such that info is integer times of c.K
     #pad = np.zeros(c.K - info.size%c.K)
