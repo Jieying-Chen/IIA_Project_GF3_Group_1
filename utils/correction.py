@@ -44,10 +44,6 @@ def phase_difference(received_signal, event,known_ofdm_data,CP_LENGTH,DFT_LENGTH
     return phase_diff,H1,H2
 
 def regression_correction(spb,slope1,intercept1,H1,H2, deconvolved,symbol_per_frame):
-<<<<<<< HEAD
-    
-=======
->>>>>>> 71cb393a7645ffa85992eb6c13b9ab854e660525
     x_2 = np.linspace(0,spb,num=spb)
     #intercept1 = (intercept1 - slope1 * start1) % (2*np.pi)
     correction1 = np.exp(-1j*(slope1*x_2+intercept1))  #compensate with the regression result from last block
